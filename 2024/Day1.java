@@ -37,5 +37,19 @@ public class Day1 {
         }
 
         System.out.println(distance);
+
+        //Part 2:
+        //there has to be a better way of doing this:
+        int similarityScore = 0;
+        for (String i : list1) {
+            int count = 0;
+            for (String j : list2) {
+                if (j.equals(i)) {
+                    count++;
+                }
+            }
+            similarityScore += Integer.parseInt(i) * count;
+        }
+        System.out.println(similarityScore);
     }
 }
