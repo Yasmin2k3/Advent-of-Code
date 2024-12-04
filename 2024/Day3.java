@@ -1,67 +1,83 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.regex.*;
+import java.util.stream.*;
 
 public class Day3 {
-    public static int isMiddle(int index, String line){
-        String nums = "1234567890";
-        int numSize = 0;
-        while(nums.contains(Character.toString(line.charAt(index))) || numSize <= 3){
-            //System.out.println(line.charAt(index));
-            numSize ++;
-            index++;
-        }
 
-        //System.out.println(numSize);
-        return numSize;
+    public static List<String> clean(String s) {
+        Pattern p = Pattern.compile("mul\\([0-9]{1,3},[0-9]{1,3}\\)");
+        Matcher matcher = p.matcher(s);
+        List<String> result = new ArrayList<>();
+        while (matcher.find()) {
+            result.add(matcher.group());
+        }
+        return result;
     }
 
-    public static void main(String[] args) {
-        String start = "mul(";
-        String end = ")";
-        String mid = ",";
-        boolean doo = true;
-        try{
-            ArrayList<String> commands = new ArrayList<>();
-            BufferedReader br = new BufferedReader(new FileReader("text files/Day3"));
-            String line;
-            while ((line = br.readLine()) != null) {
-                try{
-                    for(int i=0; i<line.length(); i++){
-                        if(line.substring(i, i + 4).equals(start)){
-                            int ending = i+4;
-                            int diff = isMiddle(i+4, line);
-                            if(diff > 0 && diff < 8){
-                                ending+= diff;
-                                    if(line.charAt(ending) == ')'){
-                                        commands.add(line.substring(i, ending));
-                                }
-                            }
-                        }
+    public static int mul(String s) {
+        String[] numbers = s.replace("mul(", "").replace(")", "").split(",");
+        int a = Integer.parseInt(numbers[0].trim());
+        int b = Integer.parseInt(numbers[1].trim());
+        return a * b;
+    }
+
+    public static void main(String[] args) throws IOException {
+        try {
+            // Read the file content
+            String data = new String(Files.readAllBytes(new File("text files/Day3").toPath()));
+
+            // Split the input data based on "do()" or "don't()"
+            String regex = "(do\\(\\)|don't\\(\\))";
+            Pattern pattern = Pattern.compile(regex);
+            ArrayList<String> partition = getStrings(pattern, data);
+
+            int total = 0;
+            boolean doOperation = true;
+
+            // Process each part of the split data
+            for (String s : partition) {
+                if (s.equals("do()")) {
+                    doOperation = true;
+                } else if (s.equals("don't()")) {
+                    doOperation = false;
+                }
+                if (doOperation) {
+                    for (String x : clean(s)) {
+                        total += mul(x);
                     }
-                }catch(IndexOutOfBoundsException e){
                 }
-
-                int d = 0;
-                for(String s: commands){
-                    String[] temp = s.split(",");
-                    System.out.println(Arrays.toString(temp));
-                    //for(int i=0; i<temp.length; i++);
-
-                    int a = Integer.parseInt(temp[0].substring(4));
-                    int b = Integer.parseInt(temp[1]);
-                    System.out.println("a : " + a + " b: " + b);
-                    int c = a * b;
-                     d += c;
-                }
-
-                System.out.println("part 1: " + d);
             }
-        }catch (IOException e) {
+
+            // Print the total
+            System.out.println(total);
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    private static ArrayList<String> getStrings(Pattern pattern, String data) {
+        Matcher matcher = pattern.matcher(data);
+
+        ArrayList<String> partition = new ArrayList<>();
+        int lastIndex = 0;
+
+        while (matcher.find()) {
+            // Add the text before the match
+            if (matcher.start() > lastIndex) {
+                partition.add(data.substring(lastIndex, matcher.start()));
+            }
+            // Add the matched delimiter
+            partition.add(matcher.group());
+            lastIndex = matcher.end();
+        }
+
+        if (lastIndex < data.length()) {
+            partition.add(data.substring(lastIndex));
+        }
+        return partition;
     }
 }
