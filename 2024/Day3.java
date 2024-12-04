@@ -2,7 +2,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.*;
-import java.util.stream.*;
 
 public class Day3 {
 
